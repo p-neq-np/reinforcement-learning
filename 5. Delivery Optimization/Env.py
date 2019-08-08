@@ -63,8 +63,8 @@ class DeliveryEnvironment(object):
                     self.constraint_factor[i][j] = 100
                 else:
                     # Destination is earlier then origin - should be technically impossible
-                    self.constraint_factor[i][j] = 10000000
-            self.q_stops = np.multiply(self.q_stops, self.constraint_factor)
+                    self.constraint_factor[i][j] = 1000000000
+            # self.q_stops = np.multiply(self.q_stops, self.constraint_factor)
 
     def _generate_stops(self):
 
@@ -78,7 +78,7 @@ class DeliveryEnvironment(object):
 
             xy = np.array(points)
 
-        elif self.method == "time_window":
+        elif self.method in ["time_window", 'hard_constraint']:
             self.time_window = []
             for t in range(self.n_stops):
                 self.time_window.append(round(np.random.rand()))
@@ -93,7 +93,7 @@ class DeliveryEnvironment(object):
     def _generate_q_values(self):
         # Generate actual Q Values corresponding to the distance
         # Soft Constraints are implemented here using the constraint_factor table by factoring the distance values
-        if self.method in ["distance", "traffic_box", "time_window"]:
+        if self.method in ["distance", "traffic_box", "time_window", 'hard_constraint']:
             xy = np.column_stack([self.x, self.y])
             self.q_stops = cdist(xy, xy)
         else:
@@ -107,9 +107,9 @@ class DeliveryEnvironment(object):
 
         # Show stops
         color = 'red'
-        if self.method == 'time_window':
+        if self.method in ['time_window', 'hard_constraint']:
             color = []
-            for i in range(8):
+            for i in range(len(self.time_window)):
                 if self.time_window[i] == 0:
                     color.append('red')
                 else:
@@ -166,6 +166,10 @@ class DeliveryEnvironment(object):
 
         # Get current state
         state = self._get_state()
+        if self.method == 'hard_constraint' and not self._is_state_reachable(state, destination):
+            # Destination is not reachable due to Hard Constraint -
+            # Reward should stop agent from banging the head against the wall
+            return state, 1, False
         new_state = destination
 
         # Get reward for such a move
@@ -189,7 +193,7 @@ class DeliveryEnvironment(object):
     def _get_reward(self, state, new_state):
         base_reward = self.q_stops[state, new_state]
 
-        if self.method == "distance":
+        if self.method in ["distance", 'hard_constraint']:
             return base_reward
         elif self.method == "traffic_box":
             # Additional reward correspond to slowing down in traffic
@@ -203,12 +207,24 @@ class DeliveryEnvironment(object):
             else:
                 additional_reward = np.random.rand()
         elif self.method == "time_window":
-            # Additional reward correspond to time window
+            # Soft Constraint - Additional reward correspond to time window
             additional_reward = self.constraint_factor[state][new_state]
+
         else:
             raise Exception('Method do not have reward')
 
         return base_reward + additional_reward
+
+    def _is_state_reachable(self, origin, destination):
+        # This method implements Hard Constraints
+        # That is when some state is not reachable from another.
+        # Note that the states reachable vector is dynamic
+        # the constraint is to finish one time window before the other
+        if self.time_window[origin] == self.time_window[destination] \
+                or self.time_window.count(self.time_window[origin]) == len(self.stops) :
+            return True
+        else:
+            return False
 
     @staticmethod
     def _calculate_point(x1, x2, y1, y2, x=None, y=None):
