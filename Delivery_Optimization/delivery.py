@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm_notebook
 import imageio
 import sys
-from Env import DeliveryEnvironment
+#from Env import DeliveryEnvironment
 sys.path.append("../")
 from rl.agents.q_agent import QAgent
 
@@ -32,6 +32,9 @@ class DeliveryQAgent(QAgent):
             a = np.random.choice(possible_states)
 
         return a
+    
+    def update_epsilon(self):
+        return 0
 
     def remember_state(self, s):
         self.states_memory.append(s)
@@ -65,7 +68,9 @@ class DeliveryAgentTimeWindow(DeliveryQAgent):
 
 def run_episode(env, agent, verbose=1):
     s = env.reset()
+    
     agent.reset_memory()
+    agent.update_epsilon()
 
     max_step = env.n_stops
 
@@ -90,7 +95,10 @@ def run_episode(env, agent, verbose=1):
             print(s_next, r, done)
 
         # Update our knowledge in the Q-table
+        #agent.step(s, a, r, s_next)
+        
         agent.train(s, a, r, s_next)
+
 
         # Update the caches
         episode_reward += r
