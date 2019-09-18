@@ -92,7 +92,8 @@ def run_episode(env, agent, verbose=1):
         r = -1 * r
 
         if verbose:
-            print(s_next, r, done)
+            # print(s_next, r, done)
+            print(s, a, r, s_next,done)
 
         # Update our knowledge in the Q-table
         #agent.step(s, a, r, s_next)
@@ -112,7 +113,7 @@ def run_episode(env, agent, verbose=1):
     return env, agent, episode_reward
 
 
-def run_n_episodes(env, agent, name="training.gif", n_episodes=1000, render_each=10, fps=10):
+def run_n_episodes(env, agent, name="training.gif", n_episodes=1000, render_each=10, fps=5):
 
     # Store the rewards
     rewards = []
