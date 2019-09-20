@@ -38,7 +38,9 @@ class QAgent():
         elif sars == 'soft':
             self.train = lambda state, action, reward, next_state, done=False: \
                 self.softmax_update(state, action, reward, next_state, done=False)
-
+        elif sars == 'sars':
+            self.train = lambda state, action, reward, next_state, done=False: \
+                self.sarsa_update(state, action, reward, next_state, done=False)
 
     def reset_memory(self):
         self.state_history.clear()
@@ -92,7 +94,8 @@ class QAgent():
         
     
     def max_update(self, state, action, reward, next_state, done=False): #update step
-        """ Update the agent's knowledge-> state-value function (Q), using the most recently sampled tuple.
+        """ Update the agent's knowledge-> state-value function (Q),
+        using the most recently sampled tuple with sarsa max
             
         Params
         ======
@@ -101,20 +104,21 @@ class QAgent():
         - reward: last reward received
         - next_state: the current state of the environment
         - done: whether the episode is complete (True or False)
-        - policy_s: the current policy
-        """            
+        """
         #Q_update = 0
         #if not done: # if done next state Q value is 0
         #    if self.sars == 'max': # sarsamax
                 #np.random.
         #Q_update = np.max(self.Q[next_state])
-                
         #old_Q = self.Q[state][action]
         #self.Q[state][action] = old_Q + (self.alpha * (reward + (self.gamma * Q_update) - old_Q))
-        self.Q[state,action] = self.Q[state,action] + self.alpha * (reward + self.gamma * np.max(self.Q[next_state]) - self.Q[state,action])
+        self.Q[state,action] = self.Q[state,action] + self.alpha * \
+                               (reward + self.gamma * np.max(self.Q[next_state]) - self.Q[state,action])
 
     def softmax_update(self, state, action, reward, next_state, done=False):  # update step
-        """ Update the agent's knowledge-> state-value function (Q), using the most recently sampled tuple.
+
+        """ Update the agent's knowledge-> state-value function (Q),
+        using the most recently sampled tuple with sarsa softmax.
 
         Params
         ======
@@ -123,18 +127,15 @@ class QAgent():
         - reward: last reward received
         - next_state: the current state of the environment
         - done: whether the episode is complete (True or False)
-        - policy_s: the current policy
         """
-        # Q_update = 0
-        # if not done: # if done next state Q value is 0
-        #    if self.sars == 'max': # sarsamax
-        # np.random.
-        # Q_update = np.max(self.Q[next_state])
 
-        # old_Q = self.Q[state][action]
-        # self.Q[state][action] = old_Q + (self.alpha * (reward + (self.gamma * Q_update) - old_Q))
         possible_updates = softmax(self.Q[next_state])
         update = np.random.choice(self.nA, 1, p=possible_updates)
-        # print(update, ' ', possible_updates)
-        self.Q[state, action] = self.Q[state, action] + self.alpha * (
-                    reward + self.gamma * self.Q[next_state, update] - self.Q[state, action])
+        self.Q[state, action] = self.Q[state, action] + self.alpha * \
+                                (reward + self.gamma * self.Q[next_state, update] - self.Q[state, action])
+
+    def sarsa_update(self, state, action, reward, next_state, done=False): # update step
+        next_action = self.act(next_state)
+        # print("state, next_state, action:", state, next_state, next_action)
+        self.Q[state, action] = self.Q[state, action] + self.alpha * \
+                                (reward + self.gamma * self.Q[next_state, next_action] - self.Q[state, action])
