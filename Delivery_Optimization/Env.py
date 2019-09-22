@@ -12,7 +12,7 @@ def _is_in_box(x, y, box):
 
 
 class DeliveryEnvironment(object):
-    def __init__(self, n_stops=10, max_box=10, method="distance", **kwargs):
+    def __init__(self, n_stops=10, max_box=10, method="distance", poi = None, **kwargs):
 
         print(f"Initialized Delivery Environment with {n_stops} random stops")
         print(f"Target metric for optimization is {method}")
@@ -25,9 +25,11 @@ class DeliveryEnvironment(object):
         self.stops = []
         self.method = method
         self.constraint_factor = []
-
+        self.poi = poi
         # Generate stops
         self._generate_constraints(**kwargs)
+        # Should be higher than the num of stops?
+
         self._generate_stops()
         self._generate_q_values()
         self._generate_soft_constraint()
@@ -66,6 +68,12 @@ class DeliveryEnvironment(object):
                     self.constraint_factor[i][j] = 1000000000
             # self.q_stops = np.multiply(self.q_stops, self.constraint_factor)
 
+    def _generate_random_points(self):
+        if self.poi is not None:
+            return self.poi
+        else:
+            return np.random.rand(self.n_stops, 2) * self.max_box
+
     def _generate_stops(self):
 
         if self.method == "traffic_box":
@@ -85,7 +93,9 @@ class DeliveryEnvironment(object):
             xy = np.random.rand(self.n_stops, 2) * self.max_box
         else:
             # Generate geographical coordinates
-            xy = np.random.rand(self.n_stops, 2) * self.max_box
+            print("else distance")
+            xy = self._generate_random_points()
+            # xy = np.random.rand(self.n_stops, 2) * self.max_box
 
         self.x = xy[:, 0]
         self.y = xy[:, 1]
@@ -180,6 +190,9 @@ class DeliveryEnvironment(object):
         done = len(self.stops) == self.n_stops
 
         return new_state, reward, done
+
+    def get_stops(self):
+        return np.column_stack([self.x[self.stops], self.y[self.stops]])
 
     def _get_state(self):
         return self.stops[-1]
