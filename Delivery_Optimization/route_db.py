@@ -28,19 +28,24 @@ class Storage:
         """
         return self.collection.insert_one(route_dict)
 
-    def export_as_CSV(self, collection_name=None, field_name=None filename=None):
+    def export_as_CSV(self, collection_name=None, field_name=None, filename=None):
         """
         :param collection_name: test table,filename: full path of the CSV
         :return: returns nothing
         """
         if filename and field_name and collection_name is not None:
             # subprocess
+            pass
         else:
             print("Parameters are not valid")
 
     # simple print
-    def print_table(self):
+    def print_table(self, limit=10):
+        count = 0
         for x in self.collection.find():
             print(x)
+            count += 1
+            if count >= limit:
+                break
 
 

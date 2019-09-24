@@ -12,10 +12,10 @@ def _is_in_box(x, y, box):
 
 
 class DeliveryEnvironment(object):
-    def __init__(self, n_stops=10, max_box=10, method="distance", poi = None, **kwargs):
-
-        print(f"Initialized Delivery Environment with {n_stops} random stops")
-        print(f"Target metric for optimization is {method}")
+    def __init__(self, n_stops=10, max_box=10, method="distance", poi = None, verbose=0, **kwargs):
+        if verbose:
+            print(f"Initialized Delivery Environment with {n_stops} random stops")
+            print(f"Target metric for optimization is {method}")
 
         # Initialization
         self.n_stops = n_stops
@@ -93,7 +93,6 @@ class DeliveryEnvironment(object):
             xy = np.random.rand(self.n_stops, 2) * self.max_box
         else:
             # Generate geographical coordinates
-            print("else distance")
             xy = self._generate_random_points()
             # xy = np.random.rand(self.n_stops, 2) * self.max_box
 

@@ -112,15 +112,30 @@ def run_episode(env, agent, verbose=1):
 
     return env, agent, episode_reward
 
+def gen_n_episodes(env, agent, n_episodes=1000):
+    
+    # Store the rewards
+    rewards = []
+    imgs = []
+    
+        # Experience replay
+    for i in range(n_episodes):
+        # Run the episode
+        env, agent, episode_reward = run_episode(env, agent, verbose=0)
+        rewards.append(episode_reward)
 
-def run_n_episodes(env, agent, name="training.gif", n_episodes=1000, render_each=10, fps=5):
+    return env, agent, rewards[-1]
+    
 
+def run_n_episodes(env, agent, name="training.gif", n_episodes=1000, render_each=100, fps=10):
+    
     # Store the rewards
     rewards = []
     imgs = []
 
     # Experience replay
     for i in tqdm_notebook(range(n_episodes)):
+        
         if i % 100 == 0:
             print('episod: ' + str(i))
         # Run the episode
@@ -139,5 +154,5 @@ def run_n_episodes(env, agent, name="training.gif", n_episodes=1000, render_each
 
     # Save imgs as gif
     imageio.mimsave(name, imgs, fps=fps)
-
+    
     return env, agent
