@@ -32,10 +32,10 @@ import datetime
 # In[13]:
 
 
-n_points = 30
+n_points = 20
 max_box = 10
-n_stops = 20
-n_samples = 10**5
+n_stops = 10
+n_samples = int(0.05*10**5)
 
 pois = np.random.rand(n_points, 2) * max_box
 print(pois)
@@ -48,7 +48,7 @@ print(pois)
 
 dt = datetime.datetime.now().strftime("%d-%H-%M-%S")
 # enable database 
-st_table = "TSP20Gen"+dt
+st_table = "TSP10Gen"+dt
 print("Table: ", st_table)
 db = Storage(st_table)
 
@@ -66,11 +66,11 @@ for i in range(n_samples):
     route_indices = env.stops # need a getter?
     global_route_indices = reverse_task_ind[route_indices,1]
     # add to the database
-    
-    route_dict = {"input_graph": ','.join(map(str, task_indices.tolist())), "route": ','.join(map(str, global_route_indices.tolist())), 
+
+    # each graph element will be seperated by colon (:)
+    route_dict = {"input_graph": ':'.join(map(str, task_indices.tolist())), "route": ':'.join(map(str, global_route_indices.tolist())),
                   "reward": reward}
     res = db.insert_route(route_dict)
-    
 
 print('done')
 
